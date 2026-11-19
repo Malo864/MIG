@@ -7,7 +7,7 @@ def solve(P,n,L,A,v_p,d_c,sigma,eta,a,b,mu, eps=1E-10, N=1000):
 
     #L 1.00 #Taille de la faille en m
 
-    #A = 1.00 #Surface de la faille en m²
+    #A = 1.00 #Surface de la faille orthogonal à n en m²
 
     #v_p = 3.15E+5  #de l'ordre du cm/an, ici exprimé en m/s
 
@@ -26,10 +26,18 @@ def solve(P,n,L,A,v_p,d_c,sigma,eta,a,b,mu, eps=1E-10, N=1000):
     #N nombre d'itérations maximum dans le solveur
 
     #-------------------------------------#
+    #Paramètres ajustés
+    #-------------------------------------#
+
+    sigma_normale=np.dot(sigma,n)
+    
+    k = mu/L
+
+    #-------------------------------------#
     #Paramètres adimensionnnés
     #-------------------------------------#
 
-    k = mu/L
+
 
     kappa = k*d_c/(b*sigma_normale)
 
