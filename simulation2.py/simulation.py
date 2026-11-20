@@ -266,7 +266,7 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,sigma,eta,a,b,mu, eps=1E-10, N=1000):
 
     V_plongé = np.array([sens_v_p[0]*Vitesse , sens_v_p[1]*Vitesse , sens_v_p[2]*Vitesse]) #calcul de la vitesse plongée dans l'espace 3d où évolue la faille
 
-    Position = U_plongé + P  #On replace ce déplacement pour obtenir la position de la faille
+    Position = np.array([U_plongé[0] + P[0] , U_plongé[1] + P[1] , U_plongé[2] + P[2]])  #On replace ce déplacement pour obtenir la position de la faille
 
 
     return (Temps, V_plongé, Thêta, Position) #Renvoi du résultat
