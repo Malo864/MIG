@@ -2,7 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10, N=1000):
+def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10, N=10000):
+    import numpy as np
+    import matplotlib.pyplot as plt
+    
     """Cette fonction prend en compte les caractéristiques d'une faille et renvoie la simulation pour N itération avec une erreur epsilon. """
 
     #P = (0,0,1000) coordonnées du centre de la faille. On a pris la convention où la profondeur est notée positivement.
@@ -15,7 +18,7 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10
 
     #sens_v_p le sens et la direction dans laquelle coulisse la faille à la vitesse v_p. (Précondition : il est de norme 1.)
 
-    #v_p = 3.15E+5  #de l'ordre du cm/an, ici exprimé en m/s
+    #v_p = 3.15E-5  #de l'ordre du cm/an, ici exprimé en m/s
 
     #d_c = 1E-6 #distance caractéristique du frottement
 
@@ -36,8 +39,8 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10
     #-------------------------------------#
 
 
-    sigma_normale = np.dot(fun_sigma(t, param_sigma), n)
-    k = mu*d_c/(b*sigma_normale*L)
+    sigma_normal = np.dot(fun_sigma(0, param_sigma), n)
+    k = mu*d_c/(b*sigma_normal*L)
 
     alpha = a/b
 
@@ -45,7 +48,7 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10
     #Paramètres initiaux
     #-------------------------------------#
 
-    v_i= 0.1 #vitesse initiale
+    v_i= 0.1*v_p #vitesse initiale
 
 
     #-------------------------------------#
@@ -194,17 +197,15 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10
             k6 = h * frns(phi+dphi,nu+dnu,pnd, k)
             l6 = h * grns(phi+dphi,nu+dnu, k)
 
+            # Error estimation
+            err=r1*np.array([k1, l1])+r3*np.array([k3, l3])+r4*np.array([k4, l4])+r5*np.array([k5, l5])+r6*np.array([k6, l6])
+            errmax=np.max(abs(err))
 
             if h_resolved>0:
                 phi=phi+c1 * k1 + c3 * k3 + c4 * k4 + c5 * k5 +c6 * k6
                 nu=nu+c1 * l1 + c3 * l3 + c4 * l4 + c5 * l5 + c6*l6
                 h=np.min(np.array([pc.safe*h*((pc.tol/errmax)**0.25), pc.hmax]))
                 return phi,nu,h,"garbage"
-
-
-            # Error estimation
-            err=r1*np.array([k1, l1])+r3*np.array([k3, l3])+r4*np.array([k4, l4])+r5*np.array([k5, l5])+r6*np.array([k6, l6])
-            errmax=np.max(abs(err))
 
             if errmax <= pc.tol and errmax>=0:
                 passtep=1
@@ -218,11 +219,12 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10
 
 
             if errmax>pc.tol:
+                #h_old=h
                 h=np.max(np.array([pc.safe*h*((pc.tol/errmax)**0.25), pc.hmin]))
 
     
-
-        return phi,nu,h, h_old
+        h_old=h
+        return phi,nu,h,h_old
 
     #-------------------------------------------#
     # Iterations
@@ -240,7 +242,7 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10
         #update stress and therefore k
         sigma= fun_sigma(t, param_sigma)
         sigma_normal=np.dot(sigma,n)
-        k=mu*d_c/(b*sigma_normale*L)
+        k=mu*d_c/(b*sigma_normal*L)
        
         #--update phi, nu and h for next iteration
         phi,nu,h,garbage= rkf(phi,nu,h,pnd,pc,k,h)
@@ -259,9 +261,13 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10
     #-------------------------------------#
     Temps = T*d_c/v_p
 
-    Vitesse = v_p*np.exp(phi)
+    Vitesse = v_p*np.exp(Phi)
 
-    Thêta = d_c/v_p*np.exp(nu)
+    Thêta = d_c/v_p*np.exp(Nu)
+
+    plt.figure()
+    plt.plot(T,np.log10(np.exp(Phi)),'-+k')
+    plt.show()
 
     #-------------------------------------#
     #Replongement du résultat et traitement supplémentaire.
@@ -287,19 +293,21 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10
 
 def deplacement(T,V):
     """Cette fonction va prendre en entrée le temps et la vitesse et en sortie donner le déplacement. """
-    U=np.zeroes(len(T))
-    for i in range(1,len(T)):
+    U=np.zeros(len(T))
+    for i in range(1,len(T)-1):
         U[i]=V[i]*(T[i+1]-T[i])+U[i-1]
     return U
 
 
 
-def contrainte_normale (t,fun, amplitude, param) : 
+def contrainte_normale (t,paramSigma): 
     """La fonction renvoie une liste de vecteurs contrainte au cours du temps espacés d'un pas h"""
+    #paramSigma=(fun, amplitude, param)
+   
     #fun est un String, qui peut prendre "exp", "affine", "periodic", "heavyside"
     #amplitude est le coef avant le exp, la pente, ou l'amplitude selon contexte
     #param est la constante de temps de l'exp, le biais, la période, ou l'instant du step
-
+    fun,amplitude,param=paramSigma[0], paramSigma[1], paramSigma[2]
     if fun == "exp":
         return np.array([0,0,amplitude*np.exp(param*t)])
     elif fun=="affine":
@@ -308,3 +316,6 @@ def contrainte_normale (t,fun, amplitude, param) :
         return np.array([0,0,amplitude*np.cos(param*t)])
     elif fun == "heavyside":
         return np.array([0,0,amplitude]) if t>param else np.array([0,0,0]) 
+    else : return np.array([0,0,2.5E6])
+
+Temps, V_plongé, Thêta, Position = solve((0,0,1000), (0,0,1), 1, 1, (1,0,0), 3.15E-5,1E-6, contrainte_normale, ("heavyside",2.5E6,-1),1E-8, 0.05,0.1, 10E10)
