@@ -1,9 +1,6 @@
+import scipy as sp
 import numpy as np
+def f(x):
+    return np.exp(-x**2)/2
 
-A= np.array([0.,1.,2.,3.])
-
-S= np.array([0.,1.,2.])
-
-U = [(S[0]) + A , S[1]+A, S[2]+A]
-
-print(U)
+print(sp.integrate.quad(f,0,np.inf))

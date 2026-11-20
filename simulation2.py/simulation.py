@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 def solve(P,n,L,A,sens_v_p,v_p,d_c,sigma,rho,a,b,mu, eps=1E-10, N=1000):
     """Cette fonction prend en compte les caractéristiques d'une faille et renvoie la simulation pour N itération avec une erreur epsilon. """
 
-    #P = (0,0,1000) coordonnées du centre de la faille. On a pris la convention où la profondeur est notée positivement.
+    #P = np.array([0,0,1000]) coordonnées du centre de la faille. On a pris la convention où la profondeur est notée positivement.
 
-    #n = (0,0,1) #Vecteur normal du plan de la faille sous la forme (x,y,z)
+    #n = np.array([0,0,1]) #Vecteur normal du plan de la faille sous la forme (x,y,z)
 
     #L 1.00 #Taille de la faille en m
 
@@ -280,7 +280,7 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,sigma,rho,a,b,mu, eps=1E-10, N=1000):
 
 def deplacement(T,V):
     """Cette fonction va prendre en entrée le temps et la vitesse et en sortie donner le déplacement. """
-    U=np.zeroes(len(T))
+    U=np.zeros(len(T))
     for i in range(1,len(T)):
         U[i]=V[i]*(T[i+1]-T[i])+U[i-1]
     return U
