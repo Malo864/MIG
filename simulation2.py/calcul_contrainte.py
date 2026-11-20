@@ -7,9 +7,9 @@
 
 Q = 0.04 #Le débit volumique d'injection de fluide
 
-lambdaa = 16E9 #coefficient de Larmé drainé
+lambdaa = 16E9 #coefficient de Lamé drainé
 
-lambdaa_u = 37E9 #coefficient de Larmé non drainé
+lambdaa_u = 37E9 #coefficient de Lamé non drainé
 
 mu = 16E9 #Module de cisaillement
 
@@ -32,6 +32,7 @@ def g(x):
     return (2/np.pi)*sp.integrate.quad(lambda y : np.exp(-y**2),0,x/2) - (x/np.pi)*np.exp(-x**2/4)
 
 def delta(i,j):
+    #Symbole de Kronecker
     if i==j:
         return 1
     else:
@@ -45,7 +46,7 @@ def fun_sigma(r,t):
     for i in range(3):
         for j in range(3):
             #grosse formule bourrine de calcul de la matrice de contrainte
-            sigma[i,j] = - (Q*(lambdaa_u-lambdaa))/(4*np.pi*D*norme_r*alpha*(lambdaa_u + 2*mu)) * (delta(i,j)*(erfc(xi/2)-2*g(xi)/(xi**2)) + r[i]*r[j]/norme_r**2 *(erfc(xi/2)+6*g(xi)/(xi**2)))
+            sigma[i,j] = - (Q*mu*(lambdaa_u-lambdaa))/(4*np.pi*D*norme_r*alpha*(lambdaa_u + 2*mu)) * (delta(i,j)*(erfc(xi/2)-2*g(xi)/(xi**2)) + r[i]*r[j]/norme_r**2 *(erfc(xi/2)+6*g(xi)/(xi**2)))
     return sigma
 
 def fun_sigma_normale(sigma,n):
