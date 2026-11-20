@@ -1,6 +1,4 @@
-import scipy as sp
 import numpy as np
-def f(x):
-    return np.exp(-x**2)/2
-
-print(sp.integrate.quad(f,0,np.inf))
+a=np.ones((3,3))
+n=np.array([1,2,3])
+print(np.dot(np.dot(a,n),n))
