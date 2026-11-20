@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def solve(P,n,L,A,sens_v_p,v_p,d_c,sigma,eta,a,b,mu, eps=1E-10, N=1000):
+def solve(P,n,L,A,sens_v_p,v_p,d_c,sigma,rho,a,b,mu, eps=1E-10, N=1000):
     """Cette fonction prend en compte les caractéristiques d'une faille et renvoie la simulation pour N itération avec une erreur epsilon. """
 
     #P = (0,0,1000) coordonnées du centre de la faille. On a pris la convention où la profondeur est notée positivement.
@@ -43,7 +43,7 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,sigma,eta,a,b,mu, eps=1E-10, N=1000):
     #Paramètres adimensionnnés
     #-------------------------------------#
 
-
+    eta = np.sqrt(mu*rho)/2
 
     kappa = k*d_c/(b*sigma_normale)
 

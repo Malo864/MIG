@@ -1,3 +1,12 @@
 Notes sur la simulation2
 
 Comment modéliser l'action des contraintes tangentielles sur une faille, à partir du champs de contrainte ?
+
+La question précédente reste en suspens, mais voilà une nouvelle remarque :
+    Il faut prendre en compte dans le solve  que la contrainte n'est pas une constante, et dépend du temps.
+
+De plus, il va falloir ajouter la pression de fluide. Cela induit que la contrainte que l'on va fournir à solve est une contrainte #effective# !
+
+c-à-d : formule de Teghazi : sigma_effectif = contrainte - pression_de_fluide.
+
+Le lien avec la pression de fluide est donc pour l'instant effectué à l'extérieur de la fonction.
