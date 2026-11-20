@@ -39,8 +39,9 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10
     #-------------------------------------#
 
 
-    sigma_normal = np.dot(fun_sigma(0, param_sigma), n)
-    k = mu*d_c/(b*sigma_normal*L)
+    sigma_normale = np.dot(fun_sigma(0, param_sigma), n)
+
+    k = mu*d_c/(b*sigma_normale*L)
 
     alpha = a/b
 

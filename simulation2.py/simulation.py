@@ -15,7 +15,7 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,sigma,rho,a,b,mu, eps=1E-10, N=1000):
 
     #sens_v_p le sens et la direction dans laquelle coulisse la faille à la vitesse v_p. (Précondition : il est de norme 1.)
 
-    #v_p = 3.15E+5  #de l'ordre du cm/an, ici exprimé en m/s
+    #v_p = 3.15E-5  #de l'ordre du cm/an, ici exprimé en m/s
 
     #d_c = 1E-6 #distance caractéristique du frottement
 
@@ -53,7 +53,7 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,sigma,rho,a,b,mu, eps=1E-10, N=1000):
     #Paramètres initiaux
     #-------------------------------------#
 
-    v_i= 0.1 #vitesse initiale
+    v_i= 0.1*v_p #vitesse initiale
 
 
     #-------------------------------------#
