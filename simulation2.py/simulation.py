@@ -1,4 +1,8 @@
-def solve(P,n,L,A,v_p,d_c,sigma,eta,a,b,mu, eps=1E-10, N=1000):
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def solve(P,n,L,A,sens_v_p,v_p,d_c,sigma,eta,a,b,mu, eps=1E-10, N=1000):
     """Cette fonction prend en compte les caractéristiques d'une faille et renvoie la simulation pour N itération avec une erreur epsilon. """
 
     #P = (0,0,1000) coordonnées du centre de la faille. On a pris la convention où la profondeur est notée positivement.
@@ -8,6 +12,8 @@ def solve(P,n,L,A,v_p,d_c,sigma,eta,a,b,mu, eps=1E-10, N=1000):
     #L 1.00 #Taille de la faille en m
 
     #A = 1.00 #Surface de la faille orthogonal à n en m²
+
+    #sens_v_p le sens et la direction dans laquelle coulisse la faille à la vitesse v_p. (Précondition : il est de norme 1.)
 
     #v_p = 3.15E+5  #de l'ordre du cm/an, ici exprimé en m/s
 
@@ -249,3 +255,33 @@ def solve(P,n,L,A,v_p,d_c,sigma,eta,a,b,mu, eps=1E-10, N=1000):
     Vitesse = v_p*np.exp(phi)
 
     Thêta = d_c/v_p*np.exp(nu)
+
+    #-------------------------------------#
+    #Replongement du résultat et traitement supplémentaire.
+    #-------------------------------------#
+
+    U = deplacement(Temps,Vitesse) #calcul du déplacement 
+
+    U_plongé = np.array([sens_v_p[0]*U , sens_v_p[1]*U , sens_v_p[2]*U]) #calcul du déplacement relatif plongé dans l'espace 3d où évolue la faille
+
+    V_plongé = np.array([sens_v_p[0]*Vitesse , sens_v_p[1]*Vitesse , sens_v_p[2]*Vitesse]) #calcul de la vitesse plongée dans l'espace 3d où évolue la faille
+
+    Position = U_plongé + P  #On replace ce déplacement pour obtenir la position de la faille
+
+
+    return (Temps, V_plongé, Thêta, Position) #Renvoi du résultat
+
+
+
+#-------------------------------------#
+#Le but maintenant va être de traiter plus finement ce résultat pour le plongement en 3D, et des surpressions.
+#-------------------------------------#
+
+
+def deplacement(T,V):
+    """Cette fonction va prendre en entrée le temps et la vitesse et en sortie donner le déplacement. """
+    U=np.zeroes(len(T))
+    for i in range(1,len(T)):
+        U[i]=V[i]*(T[i+1]-T[i])+U[i-1]
+    return U
+
