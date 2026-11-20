@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10, N=10000):
+def solve(fun_sigma, param_sigma,P=(0,0,1000),n=(0,0,1),L=1,A=1,sens_v_p=(1,0,0),v_p=9.5E-10,d_c=1E-6, eta=1E-8,a=0.05,b=0.1,mu=10E10, eps=1E-10, N=10000):
     import numpy as np
     import matplotlib.pyplot as plt
     
@@ -18,7 +18,7 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10
 
     #sens_v_p le sens et la direction dans laquelle coulisse la faille à la vitesse v_p. (Précondition : il est de norme 1.)
 
-    #v_p = 3.15E-5  #de l'ordre du cm/an, ici exprimé en m/s
+    #v_p = 9.5E-10  #de l'ordre du cm/an, ici exprimé en m/s
 
     #d_c = 1E-6 #distance caractéristique du frottement
 
@@ -26,7 +26,7 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10
 
     #eta = 1E-8 #terme de viscosité
 
-    #a , b = 0.5 , 0.1 #Coefficients caractéristiques de la loi de frottement
+    #a , b = 0.05 , 0.1 #Coefficients caractéristiques de la loi de frottement
 
     #mu = 10E10 #module de cisaillement
 
@@ -259,30 +259,36 @@ def solve(P,n,L,A,sens_v_p,v_p,d_c,fun_sigma, param_sigma, eta,a,b,mu, eps=1E-10
     #-------------------------------------#
     #Redimensionnement du résultat
     #-------------------------------------#
-    Temps = T*d_c/v_p
+    Time = T*d_c/v_p #en s
+    Time_day=Time/(24*3600)
+    vitesse = v_p*np.exp(Phi) #en m/s
 
-    Vitesse = v_p*np.exp(Phi)
-
-    Thêta = d_c/v_p*np.exp(Nu)
+    theta = d_c/v_p*np.exp(Nu)
 
     plt.figure()
+    plt.plot(Time_day,np.log10(np.exp(Phi)),'-+k')
+    plt.xlabel("Temps en jours")
+    plt.ylabel("log de la vitesse en adimensionné")
+    plt.figure()
     plt.plot(T,np.log10(np.exp(Phi)),'-+k')
+    plt.xlabel("Temps en adimensionné, 1unité=dc/vp")
+    plt.ylabel("log de la vitesse en adimensionné")
     plt.show()
 
     #-------------------------------------#
     #Replongement du résultat et traitement supplémentaire.
     #-------------------------------------#
 
-    U = deplacement(Temps,Vitesse) #calcul du déplacement 
+    U = deplacement(Time,vitesse) #calcul du déplacement 
 
-    U_plongé = np.array([sens_v_p[0]*U , sens_v_p[1]*U , sens_v_p[2]*U]) #calcul du déplacement relatif plongé dans l'espace 3d où évolue la faille
+    U_vectoralized = np.array([sens_v_p[0]*U , sens_v_p[1]*U , sens_v_p[2]*U]) #calcul du déplacement relatif plongé dans l'espace 3d où évolue la faille
 
-    V_plongé = np.array([sens_v_p[0]*Vitesse , sens_v_p[1]*Vitesse , sens_v_p[2]*Vitesse]) #calcul de la vitesse plongée dans l'espace 3d où évolue la faille
+    V_vectoralized = np.array([sens_v_p[0]*vitesse , sens_v_p[1]*vitesse , sens_v_p[2]*vitesse]) #calcul de la vitesse plongée dans l'espace 3d où évolue la faille
 
-    Position = np.array([U_plongé[0] + P[0] , U_plongé[1] + P[1] , U_plongé[2] + P[2]])  #On replace ce déplacement pour obtenir la position de la faille
+    position = np.array([U_vectoralized[0] + P[0] , U_vectoralized[1] + P[1] , U_vectoralized[2] + P[2]])  #On replace ce déplacement pour obtenir la position de la faille
 
 
-    return (Temps, V_plongé, Thêta, Position) #Renvoi du résultat
+    return (Temps, V_vectoralized, theta, position) #Renvoi du résultat
 
 
 
@@ -303,19 +309,21 @@ def deplacement(T,V):
 def contrainte_normale (t,paramSigma): 
     """La fonction renvoie une liste de vecteurs contrainte au cours du temps espacés d'un pas h"""
     #paramSigma=(fun, amplitude, param)
-   
+
     #fun est un String, qui peut prendre "exp", "affine", "periodic", "heavyside"
     #amplitude est le coef avant le exp, la pente, ou l'amplitude selon contexte
-    #param est la constante de temps de l'exp, le biais, la période, ou l'instant du step
-    fun,amplitude,param=paramSigma[0], paramSigma[1], paramSigma[2]
+    #param est la constante de temps de l'exp, la période du cos, ou l'instant du step pour heavyside. Inutile pour affine
+    #param2 est la part constante dans toutes les fonctions 
+    fun, amplitude, param, param2 =paramSigma[0], paramSigma[1], paramSigma[2], paramSigma[3]
     if fun == "exp":
-        return np.array([0,0,amplitude*np.exp(param*t)])
+        return np.array([0,0,param2+ amplitude*np.exp(param*t)])
     elif fun=="affine":
-        return np.array([0,0,param + amplitude*t])
+        return np.array([0,0,param2 + amplitude*t])
     elif fun == "periodic":
-        return np.array([0,0,amplitude*np.cos(param*t)])
+        return np.array([0,0,param2+amplitude*np.cos(param*t)])
     elif fun == "heavyside":
-        return np.array([0,0,amplitude]) if t>param else np.array([0,0,0]) 
+        return np.array([0,0,param2+amplitude]) if t>param else np.array([0,0,param2]) 
     else : return np.array([0,0,2.5E6])
 
-Temps, V_plongé, Thêta, Position = solve((0,0,1000), (0,0,1), 1, 1, (1,0,0), 3.15E-5,1E-6, contrainte_normale, ("heavyside",2.5E6,-1),1E-8, 0.05,0.1, 10E10)
+#Temps, V_plongé, Thêta, Position = solve(contrainte_normale, ("periodic",1E6,8.9,2.5E6))
+Temps, V_plongé, Thêta, Position = solve(contrainte_normale, ("Heavyside",0,-1,2.5E6))
