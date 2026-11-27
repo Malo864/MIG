@@ -5,7 +5,7 @@ import numpy as np
 
 dx, dy, dz = 0.001 , 0.001 , 0.001 #paramètres infinitésimaux (précision spatiale entre deux cases d'un tableau)
 
-n = 1000 # Nombre de colonne d'un tableau 
+n = 10000 # Nombre de colonne d'un tableau 
 
 X , Y , Z = n*dx , n*dy, n*dz #Dimensions du volume
 
@@ -24,15 +24,16 @@ La loi de Gutenberg-Richter selon la taille de la faille donne
  (Voir les Notes à ce propos dans le dossier création de faille.)'''
 
 alpha = 1.35 #paramètre d'évolution caractéristique de la loi de Gutenberg-Richter.
-N0 = 3.1E2 #paramètre caractéristique de la sismicité 
+N0 =100 #paramètre caractéristique de la sismicité 
 
 
 def N(L,alph = alpha,N_0 = N0):
     """Cette fonction calcule le nombre de faille à partir de leur longueur."""
     return int(N_0 * L**(-alph))
 
-N_10m , N_1m, N_10cm = 1, N(1) , N(0.1) 
+L_longueurs = [0.1,0.2,0.5,1,2,3,5,7,10,20] #Les tailles de failles possibles
 
+N_longueurs = np.vectorize(N)(L_longueurs)#leurs nombres associés
 # ---------------------------------------------------------------------
 # 3.Tirage au sort de la position et de l'orientation des failles
 # ---------------------------------------------------------------------
@@ -47,13 +48,9 @@ def tirage(L):
     return [L,x,y,z,nx,ny,nz]
 
 L_faille =[]
-
-for i in range(N_10m):
-    L_faille.append(tirage(10))
-for i in range(N_1m):
-    L_faille.append(tirage(1))
-for i in range(N_10cm):
-    L_faille.append(tirage(0.1))
+for i in range(len(L_longueurs)):
+    for j in range(N_longueurs[i]):
+        L_faille.append(tirage(L_longueurs[i]))
 
 
 #Dans L_faille on a maintenant la liste des failles, avec leur position, leur orientation
