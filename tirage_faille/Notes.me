@@ -1,0 +1,37 @@
+Notes sur le nombre de failles en fonction de leur longueur :
+
+
+Loi de Gutenberg–Richter : le nombre cumulé N de séismes de magnitude supérieure ou égale à M suit
+
+log₁₀ N(M) = a − bM, avec b ≈ 0,9–1,0 universellement.
+
+Relation magnitude–longueur de faille : les lois empiriques de type Wells & Coppersmith (1994) donnent une relation logarithmique linéaire :
+
+M = c + d · log₁₀ L
+
+où L est la longueur de rupture (en km), c ≈ 4–4,5 et d ≈ 1,4–1,5 selon le type de faille et la mesure choisie.
+
+La dérivation
+On inverse la seconde relation pour exprimer M en fonction de L, puis on injecte dans Gutenberg–Richter :
+
+M = c + d·log₁₀ L ⟹ log₁₀ N(L) = a − b(c + d·log₁₀ L) = (a − bc) − b·d·log₁₀ L
+
+En repassant à l'exponentielle :
+
+N(L) = N₀ · L^(−α), où α = b·d
+
+Numériquement, avec b ≈ 0,95 et d ≈ 1,45 : α ≈ 1,35–1,4.
+
+Autrement dit, le nombre de failles décroît comme une loi de puissance en 1/L — c'est le résultat fondamental : la population des failles est multi-échelle (fractale), sans longueur caractéristique.
+
+La loi de probabilité associée
+Pour obtenir une vraie densité de probabilité, il faut borner la loi en bas par L_min (sinon elle n'est pas normalisable en 0 — problème connu des lois de puissance, discuté notamment par Clauset, Shalizi & Newman 2009). On obtient une loi de Pareto :
+
+f(L) = α · L_min^α / L^(α+1), pour L ≥ L_min
+
+avec l'espérance E[L] = α·L_min/(α−1) (finie tant que α > 1, ce qui est le cas ici puisque α ≈ 1,4), mais une variance infinie si α ≤ 2 — ce qui est précisément le cas numériquement (1,4 < 2). Concrètement, cela signifie que la majorité des failles sont courtes, mais qu'une fraction non négligeable de la longueur de deformation totale est portée par quelques très grandes failles.
+
+Nuances à garder en tête
+Cette dérivation suppose que la relation M–L est valide sur toute la gamme de tailles, or les données sismologiques ne contraint bien que le milieu de gamme : les très petites failles (sous la résolution instrumentale) et les très grandes (rarement rupturées en totalité lors d'un seul séisme) s'écartent souvent de la loi de puissance pure. Certaines études suggèrent même un caractère « characteristic earthquake » (exponentielle tronquée) pour les grandes failles individuelles. La loi de Pareto reste néanmoins l'approximation standard pour modéliser la distribution des longueurs de failles dans la croûte.
+
+Veux-tu que je trace la distribution correspondante (densité de probabilité ou loi cumulative en log-log, où la loi de puissance apparaît comme une droite), ou que je refasse le calcul avec des paramètres précis (par exemple pour des failles normales ou inverses spécifiquement) ?
